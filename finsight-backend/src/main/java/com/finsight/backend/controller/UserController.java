@@ -5,6 +5,7 @@ import com.finsight.backend.dto.UserDto;
 import com.finsight.backend.model.User;
 import com.finsight.backend.security.UserDetailsImpl;
 import com.finsight.backend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/users")
 public class UserController {
@@ -24,6 +26,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        log.info("Request received to fetch profile for user ID: {}", userDetails.getId());
         User user = userService.getUserById(userDetails.getId());
         
         List<String> roles = user.getRoles().stream()
@@ -38,6 +41,7 @@ public class UserController {
                 roles
         );
 
+        log.debug("Successfully retrieved profile details for user ID: {}", user.getId());
         return ResponseEntity.ok(new ApiResponse<>(true, "Profile retrieved successfully", userDto));
     }
 }

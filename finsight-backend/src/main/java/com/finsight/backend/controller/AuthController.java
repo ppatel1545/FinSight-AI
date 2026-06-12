@@ -8,6 +8,7 @@ import com.finsight.backend.security.UserDetailsImpl;
 import com.finsight.backend.service.RefreshTokenService;
 import com.finsight.backend.service.UserService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -40,6 +42,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<JwtResponse>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        log.info("Request received to authenticate user: email={}", loginRequest.getEmail());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -62,15 +65,19 @@ public class AuthController {
                 roles
         );
 
+        log.info("Authentication successful for email={}. Generated JWT and refresh token.", loginRequest.getEmail());
         return ResponseEntity.ok(new ApiResponse<>(true, "Login successful", jwtResponse));
     }
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<Void>> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+        log.info("Request received to register new user: username={}, email={}", signUpRequest.getUsername(), signUpRequest.getEmail());
         try {
             userService.registerUser(signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword());
+            log.info("User registered successfully: username={}", signUpRequest.getUsername());
             return ResponseEntity.ok(new ApiResponse<>(true, "User registered successfully!"));
         } catch (IllegalArgumentException e) {
+            log.warn("Registration failed for user '{}': {}", signUpRequest.getUsername(), e.getMessage());
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage()));
         }
     }
@@ -78,6 +85,7 @@ public class AuthController {
     @PostMapping("/refreshtoken")
     public ResponseEntity<ApiResponse<TokenRefreshResponse>> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
+        log.info("Request received to rotate/refresh token");
 
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
@@ -86,8 +94,12 @@ public class AuthController {
                     String token = jwtUtils.generateTokenFromEmail(user.getEmail());
                     RefreshToken rotatedRefreshToken = refreshTokenService.createRefreshToken(user.getId());
                     TokenRefreshResponse response = new TokenRefreshResponse(token, rotatedRefreshToken.getToken());
+                    log.info("Refresh token successfully verified and rotated for user ID: {}", user.getId());
                     return ResponseEntity.ok(new ApiResponse<>(true, "Token refreshed successfully", response));
                 })
-                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!"));
+                .orElseThrow(() -> {
+                    log.warn("Refresh token rotation failed: Token {} not found in database", requestRefreshToken);
+                    return new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!");
+                });
     }
 }

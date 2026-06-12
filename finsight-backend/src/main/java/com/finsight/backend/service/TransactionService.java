@@ -47,6 +47,7 @@ public class TransactionService {
         income.setAmount(request.getAmount());
         income.setDate(request.getDate());
         income.setDescription(request.getDescription());
+        income.setCurrency(request.getCurrency());
         income.setCategory(category);
         income.setUser(user);
 
@@ -72,6 +73,7 @@ public class TransactionService {
         income.setAmount(request.getAmount());
         income.setDate(request.getDate());
         income.setDescription(request.getDescription());
+        income.setCurrency(request.getCurrency());
         income.setCategory(category);
 
         return mapToDto(incomeRepository.save(income));
@@ -102,6 +104,7 @@ public class TransactionService {
         expense.setAmount(request.getAmount());
         expense.setDate(request.getDate());
         expense.setDescription(request.getDescription());
+        expense.setCurrency(request.getCurrency());
         expense.setCategory(category);
         expense.setUser(user);
 
@@ -127,6 +130,7 @@ public class TransactionService {
         expense.setAmount(request.getAmount());
         expense.setDate(request.getDate());
         expense.setDescription(request.getDescription());
+        expense.setCurrency(request.getCurrency());
         expense.setCategory(category);
 
         return mapToDto(expenseRepository.save(expense));
@@ -211,6 +215,7 @@ public class TransactionService {
                 income.getAmount(),
                 income.getDate(),
                 income.getDescription(),
+                income.getCurrency(),
                 CategoryType.INCOME,
                 categoryService.mapToDto(income.getCategory()),
                 income.getCreatedAt()
@@ -223,6 +228,7 @@ public class TransactionService {
                 expense.getAmount(),
                 expense.getDate(),
                 expense.getDescription(),
+                expense.getCurrency(),
                 CategoryType.EXPENSE,
                 categoryService.mapToDto(expense.getCategory()),
                 expense.getCreatedAt()

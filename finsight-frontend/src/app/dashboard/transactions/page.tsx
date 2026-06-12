@@ -29,6 +29,7 @@ interface Transaction {
   description: string;
   type: "INCOME" | "EXPENSE";
   category: Category;
+  currency: string;
 }
 
 interface PageData {
@@ -37,6 +38,19 @@ interface PageData {
   totalElements: number;
   number: number;
 }
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  INR: "₹",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CAD: "C$",
+  AUD: "A$",
+  CHF: "CHF",
+  CNY: "¥",
+  AED: "د.إ",
+};
 
 export default function TransactionsHistoryPage() {
   const queryClient = useQueryClient();
@@ -85,7 +99,7 @@ export default function TransactionsHistoryPage() {
       });
 
       const data = response.data.data;
-      
+
       // If a specific type filter is active, filter the content list
       if (typeFilter !== "ALL") {
         const filteredContent = data.content.filter((t: Transaction) => t.type === typeFilter);
@@ -313,11 +327,10 @@ export default function TransactionsHistoryPage() {
                     <tr key={`${t.type}-${t.id}`} className="hover:bg-white/2 transition">
                       <td className="py-4 px-6">
                         <span
-                          className={`rounded px-2 py-0.5 text-[10px] font-bold border ${
-                            t.type === "INCOME"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : "bg-red-500/10 text-red-400 border-red-500/20"
-                          }`}
+                          className={`rounded px-2 py-0.5 text-[10px] font-bold border ${t.type === "INCOME"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
+                            }`}
                         >
                           {t.type}
                         </span>
@@ -337,10 +350,9 @@ export default function TransactionsHistoryPage() {
                         {t.description || <span className="text-[#5c5c6b] italic">No description</span>}
                       </td>
                       <td className="py-4 px-6 font-mono text-[#8c8c99]">{t.date}</td>
-                      <td className={`py-4 px-6 text-right font-mono font-bold ${
-                        t.type === "INCOME" ? "text-emerald-400" : "text-red-400"
-                      }`}>
-                        {t.type === "INCOME" ? "+" : "-"}${t.amount.toFixed(2)}
+                      <td className={`py-4 px-6 text-right font-mono font-bold ${t.type === "INCOME" ? "text-emerald-400" : "text-red-400"
+                        }`}>
+                        {t.type === "INCOME" ? "+" : "-"}{CURRENCY_SYMBOLS[t.currency] || "$"}{t.amount.toFixed(2)}
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex justify-center items-center gap-2">

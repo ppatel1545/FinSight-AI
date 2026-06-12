@@ -31,6 +31,9 @@ public class Expense {
     @Column(nullable = false)
     private LocalDate date;
 
+    @Column(nullable = false, length = 10)
+    private String currency = "USD";
+
     @Size(max = 255)
     private String description;
 

@@ -17,6 +17,7 @@ public class TransactionResponse {
     private BigDecimal amount;
     private LocalDate date;
     private String description;
+    private String currency;
     private CategoryType type;
     private CategoryDto category;
     private LocalDateTime createdAt;

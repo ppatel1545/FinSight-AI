@@ -20,6 +20,7 @@ interface Transaction {
   description: string;
   type: "INCOME" | "EXPENSE";
   category: Category;
+  currency: string;
 }
 
 interface TransactionModalProps {
@@ -27,6 +28,19 @@ interface TransactionModalProps {
   onClose: () => void;
   transactionToEdit?: Transaction | null;
 }
+
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  INR: "₹",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CAD: "C$",
+  AUD: "A$",
+  CHF: "CHF",
+  CNY: "¥",
+  AED: "د.إ",
+};
 
 export default function TransactionModal({ isOpen, onClose, transactionToEdit }: TransactionModalProps) {
   const queryClient = useQueryClient();
@@ -38,6 +52,7 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
     description: "",
     type: "EXPENSE" as "INCOME" | "EXPENSE",
     categoryId: "",
+    currency: "USD",
   });
 
   // Query categories
@@ -62,6 +77,7 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
         description: transactionToEdit.description || "",
         type: transactionToEdit.type,
         categoryId: transactionToEdit.category.id.toString(),
+        currency: transactionToEdit.currency || "USD",
       });
     } else {
       // Default to empty values or preset date
@@ -71,6 +87,7 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
         description: "",
         type: "EXPENSE",
         categoryId: "",
+        currency: "USD",
       });
     }
     setErrorMessage(null);
@@ -98,6 +115,7 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
         date: formData.date,
         description: formData.description,
         categoryId: parseInt(formData.categoryId),
+        currency: formData.currency,
       };
 
       if (transactionToEdit) {
@@ -139,12 +157,12 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative w-full max-w-md rounded-2xl border border-white/5 bg-[#141416] p-6 shadow-2xl">
-        <h2 className="text-lg font-bold text-white mb-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-white/5 bg-[#141416] p-5 shadow-2xl">
+        <h2 className="text-lg font-bold text-white mb-3">
           {transactionToEdit ? "Edit Transaction Log" : "Log New Transaction"}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {errorMessage && (
             <div className="rounded-lg bg-red-950/20 border border-red-500/20 p-2.5 text-xs text-red-400 text-center">
               {errorMessage}
@@ -154,12 +172,12 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
           {/* Type Toggle */}
           {!transactionToEdit && (
             <div>
-              <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-2">Type</label>
+              <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Type</label>
               <div className="grid grid-cols-2 gap-2 bg-[#1a1a1e] p-1 rounded-lg border border-white/5">
                 <button
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, type: "EXPENSE" }))}
-                  className={`py-2 text-xs font-semibold rounded-md transition ${
+                  className={`py-1.5 text-xs font-semibold rounded-md transition ${
                     formData.type === "EXPENSE"
                       ? "bg-red-500/10 text-red-400 border border-red-500/20 shadow-sm"
                       : "text-[#8c8c99] hover:text-white"
@@ -170,7 +188,7 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
                 <button
                   type="button"
                   onClick={() => setFormData((prev) => ({ ...prev, type: "INCOME" }))}
-                  className={`py-2 text-xs font-semibold rounded-md transition ${
+                  className={`py-1.5 text-xs font-semibold rounded-md transition ${
                     formData.type === "INCOME"
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm"
                       : "text-[#8c8c99] hover:text-white"
@@ -182,29 +200,48 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
             </div>
           )}
 
-          {/* Amount */}
-          <div>
-            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-2">Amount</label>
-            <div className="relative">
-              <span className="absolute left-4.5 top-1/2 -translate-y-1/2 text-sm text-[#8c8c99]">$</span>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.amount}
-                onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
-                placeholder="0.00"
-                className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] pl-8.5 pr-4 py-2.5 text-sm outline-none focus:border-indigo-500/50"
-              />
+          {/* Amount and Currency */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Amount</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[#8c8c99]">
+                  {CURRENCY_SYMBOLS[formData.currency] || "$"}
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.amount}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
+                  placeholder="0.00"
+                  className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] pl-8 pr-4 py-2 text-sm outline-none focus:border-indigo-500/50 text-[#ededed]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Currency</label>
+              <select
+                value={formData.currency}
+                onChange={(e) => setFormData((prev) => ({ ...prev, currency: e.target.value }))}
+                className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-3 py-2 text-sm outline-none focus:border-indigo-500/50 text-[#ededed] appearance-none"
+              >
+                {Object.keys(CURRENCY_SYMBOLS).map((code) => (
+                  <option key={code} value={code}>
+                    {code} ({CURRENCY_SYMBOLS[code]})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           {/* Category */}
           <div>
-            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-2">Category</label>
+            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Category</label>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: e.target.value }))}
-              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 text-[#ededed] appearance-none"
+              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2 text-sm outline-none focus:border-indigo-500/50 text-[#ededed] appearance-none"
             >
               <option value="" disabled>Select category</option>
               {filteredCategories.map((c) => (
@@ -217,28 +254,28 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
 
           {/* Date */}
           <div>
-            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-2">Transaction Date</label>
+            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Transaction Date</label>
             <input
               type="date"
               value={formData.date}
               onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 text-[#ededed]"
+              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2 text-sm outline-none focus:border-indigo-500/50 text-[#ededed]"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-2">Description</label>
+            <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Description</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="e.g. Weekly groceries shopping, Salary payout"
-              rows={3}
-              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2.5 text-sm outline-none focus:border-indigo-500/50 text-[#ededed]"
+              rows={2}
+              className="w-full rounded-lg border border-white/5 bg-[#1a1a1e] px-4 py-2 text-sm outline-none focus:border-indigo-500/50 text-[#ededed]"
             />
           </div>
 
-          <div className="flex gap-3 justify-end pt-2">
+          <div className="flex gap-3 justify-end pt-1">
             <button
               type="button"
               onClick={onClose}

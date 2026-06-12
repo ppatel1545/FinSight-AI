@@ -31,3 +31,7 @@ finsight:
     username: ${DEFAULT_ADMIN_USER:admin}
     email: ${DEFAULT_ADMIN_EMAIL:admin@finsight.com}
     password: ${DEFAULT_ADMIN_PASSWORD:AdminPass123!}
+
+logging:
+  level:
+    com.finsight.backend: DEBUG

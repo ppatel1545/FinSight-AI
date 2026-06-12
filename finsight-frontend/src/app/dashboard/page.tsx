@@ -1,12 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import * as Icons from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
+import TransactionModal from "@/components/transactionModal";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, clearAuth } = useAuthStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLogout = () => {
     clearAuth();
@@ -38,14 +42,14 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Workspace */}
-      <main className="relative z-10 flex-1 w-full max-w-5xl mx-auto flex flex-col justify-center items-center">
-        {/* Glass Card */}
-        <div className="w-full max-w-xl rounded-2xl border border-white/5 bg-[#141416]/50 p-8 shadow-2xl backdrop-blur-xl">
+      <main className="relative z-10 flex-1 w-full max-w-5xl mx-auto flex flex-col md:flex-row gap-8 items-start justify-center pt-8">
+        {/* User Card */}
+        <div className="w-full md:w-5/12 rounded-2xl border border-white/5 bg-[#141416]/50 p-6 shadow-2xl backdrop-blur-xl">
           <div className="mb-6">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-indigo-400">
               Welcome back
             </h2>
-            <h1 className="text-4xl font-extrabold text-white mt-1">
+            <h1 className="text-3xl font-extrabold text-white mt-1">
               {user?.username || "Commander"}
             </h1>
           </div>
@@ -74,7 +78,48 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Dashboard Actions Panel */}
+        <div className="w-full md:w-7/12 space-y-4">
+          <h2 className="text-xs uppercase font-bold text-[#8c8c99] tracking-wider mb-2">
+            Workspace Actions
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* View Logs */}
+            <Link
+              href="/dashboard/transactions"
+              className="flex flex-col rounded-2xl border border-white/5 bg-[#141416]/30 p-6 hover:bg-[#1f1f25]/40 transition shadow-lg backdrop-blur-md text-left"
+            >
+              <Icons.History className="h-6 w-6 text-indigo-400 mb-4" />
+              <h3 className="text-sm font-bold text-white mb-1">Cash Flow Logs</h3>
+              <p className="text-xs text-[#8c8c99]">View, search and filter logged transactions history.</p>
+            </Link>
+
+            {/* View Categories */}
+            <Link
+              href="/dashboard/categories"
+              className="flex flex-col rounded-2xl border border-white/5 bg-[#141416]/30 p-6 hover:bg-[#1f1f25]/40 transition shadow-lg backdrop-blur-md text-left"
+            >
+              <Icons.Tags className="h-6 w-6 text-purple-400 mb-4" />
+              <h3 className="text-sm font-bold text-white mb-1">Categories</h3>
+              <p className="text-xs text-[#8c8c99]">Manage system-default and custom custom transaction tags.</p>
+            </Link>
+          </div>
+
+          {/* Quick Action Button */}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 py-4 font-bold text-white shadow-lg hover:brightness-110 active:scale-[0.99] transition duration-300"
+          >
+            <Icons.PlusCircle className="h-5 w-5" />
+            Quick Log Transaction
+          </button>
+        </div>
       </main>
+
+      {/* Quick Log Transaction Modal Overlay */}
+      <TransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

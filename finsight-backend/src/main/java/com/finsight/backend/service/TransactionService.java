@@ -36,6 +36,9 @@ public class TransactionService {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private CurrencyService currencyService;
+
     @Transactional
     public TransactionResponse createIncome(TransactionRequest request, User user) {
         log.debug("Processing request to create income for user ID: {}, category ID: {}", user.getId(), request.getCategoryId());
@@ -263,11 +266,11 @@ public class TransactionService {
         List<Expense> expenses = expenseRepository.findByUserAndDateBetween(user, start, end);
 
         BigDecimal totalIncome = incomes.stream()
-                .map(Income::getAmount)
+                .map(i -> currencyService.convert(i.getAmount(), i.getCurrency(), "USD"))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal totalExpense = expenses.stream()
-                .map(Expense::getAmount)
+                .map(e -> currencyService.convert(e.getAmount(), e.getCurrency(), "USD"))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal netSavings = totalIncome.subtract(totalExpense);

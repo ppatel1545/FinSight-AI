@@ -1,5 +1,6 @@
 package com.finsight.backend.repository;
 
+import com.finsight.backend.model.Category;
 import com.finsight.backend.model.Expense;
 import com.finsight.backend.model.User;
 import org.springframework.data.domain.Page;
@@ -9,14 +10,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+
     List<Expense> findByUser(User user);
 
     List<Expense> findByUserAndDateBetween(User user, LocalDate startDate, LocalDate endDate);
+
+    List<Expense> findByUserAndCategoryAndDateBetween(User user, Category category, LocalDate startDate, LocalDate endDate);
+
 
     @Query("SELECT e FROM Expense e WHERE e.user = :user " +
            "AND (:categoryId IS NULL OR e.category.id = :categoryId) " +
@@ -31,4 +37,13 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
             @Param("search") String search,
             Pageable pageable
     );
+
+    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM Expense e WHERE e.user = :user AND e.category = :category AND e.date >= :startDate AND e.date <= :endDate")
+    BigDecimal sumAmountByUserAndCategoryAndDateBetween(
+            @Param("user") User user,
+            @Param("category") Category category,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
+

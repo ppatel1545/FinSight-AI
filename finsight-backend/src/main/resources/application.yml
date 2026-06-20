@@ -31,7 +31,13 @@ finsight:
     username: ${DEFAULT_ADMIN_USER:admin}
     email: ${DEFAULT_ADMIN_EMAIL:admin@finsight.com}
     password: ${DEFAULT_ADMIN_PASSWORD:AdminPass123!}
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY:}
+      model: gemini-2.5-flash
+      url: https://generativelanguage.googleapis.com/v1beta/models
 
 logging:
   level:
     com.finsight.backend: DEBUG
+

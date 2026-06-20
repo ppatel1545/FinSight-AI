@@ -126,11 +126,22 @@ export default function DashboardPage() {
     }
   });
 
+  // Fetch AI Financial Insights
+  const { data: insightsData, isLoading: isLoadingInsights, refetch: refetchInsights } = useQuery<{ insights: string[] }>({
+    queryKey: ["aiInsights"],
+    queryFn: async () => {
+      const response = await api.get("/ai/insights");
+      return response.data.data;
+    },
+    retry: false
+  });
+
   const summary = dashboardData?.summary;
   const budgets = dashboardData?.budgets || [];
   const recentTransactions = dashboardData?.recentTransactions || [];
   const categoryBreakdown = dashboardData?.categoryBreakdown || [];
   const monthlyTrends = dashboardData?.monthlyTrends || [];
+
 
   return (
     <div className="relative flex min-h-screen flex-col bg-[#0d0d0f] text-[#ededed] p-6">
@@ -242,7 +253,46 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {/* AI Financial Insights Panel */}
+        <div className="rounded-2xl border border-indigo-500/10 bg-[#141416]/40 p-5 backdrop-blur-xl hover:border-indigo-500/20 transition-all duration-300">
+          <div className="flex justify-between items-center mb-3 border-b border-white/5 pb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+              <Icons.Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
+              AI Financial Insights & Recommendations
+            </h3>
+            <button
+              onClick={() => refetchInsights()}
+              className="text-[10px] text-[#8c8c99] hover:text-white flex items-center gap-1 font-semibold transition"
+            >
+              <Icons.RefreshCw className="h-3 w-3" />
+              Recalculate
+            </button>
+          </div>
+
+          {isLoadingInsights ? (
+            <div className="space-y-2.5 py-2 animate-pulse">
+              <div className="h-3.5 bg-white/5 rounded w-3/4" />
+              <div className="h-3.5 bg-white/5 rounded w-5/6" />
+              <div className="h-3.5 bg-white/5 rounded w-2/3" />
+            </div>
+          ) : (
+            <ul className="space-y-2 py-1">
+              {insightsData?.insights && insightsData.insights.length > 0 ? (
+                insightsData.insights.map((insight, idx) => (
+                  <li key={idx} className="text-xs text-[#ededed] flex gap-2 items-start leading-relaxed">
+                    <span className="text-indigo-400 mt-1 flex-shrink-0">•</span>
+                    <span>{insight}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="text-xs text-[#5c5c6b] italic">No insights available. Add transactions to analyze cash flows.</li>
+              )}
+            </ul>
+          )}
+        </div>
+
         {/* Visual Charts Section */}
+
         {isLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse">
             <div className="lg:col-span-2 h-80 rounded-2xl border border-white/5 bg-[#141416]/40" />

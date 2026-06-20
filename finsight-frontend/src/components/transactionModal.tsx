@@ -55,6 +55,35 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
     currency: "USD",
   });
 
+  const [aiInput, setAiInput] = useState("");
+  const [isParsing, setIsParsing] = useState(false);
+
+  const handleAiParse = async () => {
+    if (!aiInput.trim()) return;
+    setIsParsing(true);
+    setErrorMessage(null);
+    try {
+      const response = await api.post("/ai/parse", { text: aiInput });
+      const parsed = response.data.data;
+      
+      setFormData((prev) => ({
+        ...prev,
+        amount: parsed.amount ? parsed.amount.toString() : prev.amount,
+        currency: parsed.currency || prev.currency,
+        type: parsed.type || prev.type,
+        categoryId: parsed.categoryId ? parsed.categoryId.toString() : prev.categoryId,
+        description: parsed.description || prev.description,
+      }));
+      setAiInput("");
+    } catch (error: any) {
+      const msg = error.response?.data?.message || "Failed to parse text with AI. Please check if your GEMINI_API_KEY is configured.";
+      setErrorMessage(msg);
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+
   // Query categories
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["categories"],
@@ -169,7 +198,45 @@ export default function TransactionModal({ isOpen, onClose, transactionToEdit }:
             </div>
           )}
 
+          {/* AI Quick-Fill (Only show when creating, not editing) */}
+          {!transactionToEdit && (
+            <div className="rounded-xl border border-indigo-500/10 bg-indigo-500/5 p-3 space-y-2">
+              <label className="block text-[10px] uppercase text-indigo-400 font-bold tracking-wider flex items-center gap-1.5">
+                <Icons.Sparkles className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+                AI Quick-Fill
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={aiInput}
+                  onChange={(e) => setAiInput(e.target.value)}
+                  placeholder="e.g. Swiggy order 350 INR or Salary 5000 USD"
+                  className="flex-1 rounded-lg border border-white/5 bg-[#1a1a1e] px-3 py-1.5 text-xs outline-none focus:border-indigo-500/50 text-[#ededed]"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAiParse();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={handleAiParse}
+                  disabled={isParsing || !aiInput.trim()}
+                  className="rounded-lg bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-600 transition disabled:opacity-50 flex items-center justify-center min-w-[70px]"
+                >
+                  {isParsing ? (
+                    <Icons.Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    "Autofill"
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Type Toggle */}
+
           {!transactionToEdit && (
             <div>
               <label className="block text-xs uppercase text-[#8c8c99] font-bold mb-1">Type</label>

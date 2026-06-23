@@ -75,4 +75,41 @@ public class UserService {
                     return new ResourceNotFoundException("User not found with id: " + id);
                 });
     }
+
+    @Transactional
+    public String generateResetToken(String email) {
+        log.debug("Generating password reset token for email: {}", email);
+        User user = getUserByEmail(email);
+
+        String token = String.format("%06d", new java.util.Random().nextInt(1000000));
+        user.setResetToken(token);
+        user.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
+
+        userRepository.save(user);
+        log.debug("Generated reset token for user ID: {}, token={}", user.getId(), token);
+        return token;
+    }
+
+    @Transactional
+    public void resetPassword(String email, String token, String newPassword) {
+        log.debug("Processing password reset attempt for email: {}", email);
+        User user = getUserByEmail(email);
+
+        if (user.getResetToken() == null || !user.getResetToken().equals(token)) {
+            log.warn("Password reset failed for email {}: Invalid token", email);
+            throw new IllegalArgumentException("Invalid password reset token!");
+        }
+
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            log.warn("Password reset failed for email {}: Token expired", email);
+            throw new IllegalArgumentException("Password reset token has expired!");
+        }
+
+        user.setPassword(encoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+
+        userRepository.save(user);
+        log.debug("Password reset successfully for email: {}", email);
+    }
 }

@@ -102,4 +102,31 @@ public class AuthController {
                     return new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!");
                 });
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info("Request received for password reset code for email: {}", request.getEmail());
+        try {
+            String token = userService.generateResetToken(request.getEmail());
+            log.info("Successfully generated reset code for email: {}", request.getEmail());
+            // Return token in response body for ease of mock testing/manual entry without SMTP setup
+            return ResponseEntity.ok(new ApiResponse<>(true, "Password reset token generated successfully. Use the code: " + token, token));
+        } catch (Exception e) {
+            log.warn("Forgot password request failed for email '{}': {}", request.getEmail(), e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info("Request received to reset password for email: {}", request.getEmail());
+        try {
+            userService.resetPassword(request.getEmail(), request.getToken(), request.getNewPassword());
+            log.info("Password reset successfully for email: {}", request.getEmail());
+            return ResponseEntity.ok(new ApiResponse<>(true, "Password reset successfully!"));
+        } catch (IllegalArgumentException e) {
+            log.warn("Password reset failed for email '{}': {}", request.getEmail(), e.getMessage());
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage()));
+        }
+    }
 }

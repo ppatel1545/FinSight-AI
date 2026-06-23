@@ -42,6 +42,12 @@ public class User {
     @Column(name = "profile_picture")
     private String profilePicture;
 
+    @Column(name = "reset_token")
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: finsight-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-1234}
+      MYSQL_DATABASE: finsight_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - finsight_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$DB_PASSWORD"]
+      timeout: 10s
+      retries: 5
+
+  finsight-backend:
+    build:
+      context: ./finsight-backend
+      dockerfile: Dockerfile
+    container_name: finsight-backend-api
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD:-1234}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-db:3306/finsight_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEFAULT_ADMIN_USER=${DEFAULT_ADMIN_USER:-admin}
+      - DEFAULT_ADMIN_EMAIL=${DEFAULT_ADMIN_EMAIL:-admin@finsight.com}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-AdminPass123!}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  finsight-frontend:
+    build:
+      context: ./finsight-frontend
+      dockerfile: Dockerfile
+      args:
+        # Note: Since the Next.js client makes API calls from the user's browser,
+        # NEXT_PUBLIC_API_URL must point to the backend URL reachable by the browser.
+        # For local testing, http://localhost:8081/api/v1 is correct.
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8081/api/v1}
+    container_name: finsight-frontend-ui
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - finsight-backend
+
+volumes:
+  finsight_mysql_data:

@@ -152,10 +152,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500 selection:text-white font-sans antialiased relative overflow-hidden">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 text-white selection:bg-indigo-500 selection:text-white font-sans antialiased">
+      {/* Background Decorative Gradients — fixed layer, own overflow-hidden so they don't affect sticky positioning */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px]" />
+      </div>
 
       {/* Header / Navbar */}
       <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 transition-all">
@@ -218,7 +220,7 @@ export default function Home() {
       </section>
 
       {/* Main Interactive Sandbox Section */}
-      <section id="sandbox" className="py-16 bg-slate-950 border-t border-slate-900 relative">
+      <section id="sandbox" className="py-16 bg-slate-950 border-t border-slate-900 relative scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
@@ -549,7 +551,7 @@ export default function Home() {
       </section>
 
       {/* Product Features Section */}
-      <section id="features" className="py-20 relative">
+      <section id="features" className="py-20 relative scroll-mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">

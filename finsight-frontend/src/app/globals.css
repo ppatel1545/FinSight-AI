@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0d0d0f;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +12,77 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #0d0d0f;
+  color: #ededed;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Fix browser autofill overriding dark backgrounds ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1a1a1e inset !important;
+  -webkit-text-fill-color: #ededed !important;
+  caret-color: #ededed;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+/* ── Global keyframes for loading overlays ── */
+@keyframes fs-ping {
+  75%, 100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes fs-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fs-bounce-dot {
+  from { transform: translateY(0); opacity: 0.5; }
+  to   { transform: translateY(-9px); opacity: 1; }
+}
+@keyframes fs-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fs-pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1; }
+}
+
+/* ── Selection ── */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #ffffff;
 }

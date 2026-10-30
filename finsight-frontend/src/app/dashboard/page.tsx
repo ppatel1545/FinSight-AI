@@ -151,29 +151,67 @@ export default function DashboardPage() {
         <div className="absolute bottom-20 right-1/4 h-96 w-96 rounded-full bg-purple-900/10 blur-[120px]" />
       </div>
 
-      {/* Header Panel */}
-      <header className="relative z-10 flex w-full max-w-6xl mx-auto items-center justify-between border-b border-white/5 py-4 mb-8">
-        <div className="flex items-center gap-3">
-          <span className="h-3 w-3 rounded-full bg-indigo-500 animate-pulse" />
-          <span className="font-mono text-xs tracking-wider font-semibold text-[#8c8c99]">
-            FINSIGHT AI // WORKSPACE OVERVIEW
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-[#8c8c99] hidden sm:inline">
-            Active User: <span className="text-white font-semibold">{user?.username}</span>
-          </span>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-semibold hover:bg-white/10 hover:border-white/20 transition duration-300"
-          >
-            Sign Out
-          </button>
+      {/* ── Dashboard Navbar ── */}
+      <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#0d0d0f]/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4">
+
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <Icons.Sparkles className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="font-extrabold text-sm tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              FinSight AI
+            </span>
+          </div>
+
+          {/* Nav Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {([
+              { label: "Overview",     href: "/dashboard",             Icon: Icons.LayoutDashboard, color: "text-indigo-400"  },
+              { label: "Budgets",      href: "/dashboard/budgets",      Icon: Icons.PiggyBank,        color: "text-emerald-400" },
+              { label: "Transactions", href: "/dashboard/transactions", Icon: Icons.History,          color: "text-pink-400"   },
+              { label: "Categories",  href: "/dashboard/categories",   Icon: Icons.Tags,             color: "text-purple-400" },
+            ] as const).map(({ label, href, Icon, color }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#8c8c99] hover:text-white hover:bg-white/5 transition-all duration-200"
+              >
+                <Icon className={`h-3.5 w-3.5 ${color}`} />
+                {label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right side: user + sign out */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* Avatar chip */}
+            <div className="hidden sm:flex items-center gap-2 rounded-full border border-white/8 bg-white/5 px-2.5 py-1">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center flex-shrink-0">
+                <span className="text-[9px] font-bold text-white">
+                  {user?.username?.charAt(0)?.toUpperCase() || "U"}
+                </span>
+              </div>
+              <span className="text-xs font-medium text-[#c0c0d0] max-w-[90px] truncate">
+                {user?.username}
+              </span>
+            </div>
+
+            {/* Sign Out */}
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 rounded-lg border border-white/8 bg-white/5 px-3 py-1.5 text-xs font-semibold text-[#8c8c99] hover:text-white hover:bg-red-500/10 hover:border-red-500/20 transition-all duration-200"
+            >
+              <Icons.LogOut className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Workspace */}
-      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto space-y-6">
+      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto space-y-6 px-6 pt-6 pb-10">
         {/* Top Summary Cards */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
@@ -468,8 +506,14 @@ export default function DashboardPage() {
               </div>
 
               {budgets.length > 3 && (
-                <div className="text-center pt-2 text-[10px] text-[#8c8c99]">
-                  + {budgets.length - 3} more budgets configured
+                <div className="text-center pt-3">
+                  <Link
+                    href="/dashboard/budgets"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/20 bg-indigo-500/10 px-3 py-1.5 text-[10px] font-bold text-indigo-400 hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all duration-200"
+                  >
+                    <Icons.ChevronDown className="h-3 w-3" />
+                    + {budgets.length - 3} more budgets configured
+                  </Link>
                 </div>
               )}
             </div>
